@@ -1,0 +1,17 @@
+[project]
+name = "rag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "docling>=2.74.0",
+    "llama-index-core>=0.14.15",
+    "llama-index-embeddings-openai>=0.5.1",
+    "llama-index-node-parser-docling>=0.4.2",
+    "llama-index-readers-docling>=0.4.2",
+    "llama-index-vector-stores-postgres>=0.7.3",
+    "psycopg2-binary>=2.9.11",
+    "pydantic-settings>=2.13.1",
+    "sqlalchemy>=2.0.46",
+]
