@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import tiktoken
+from docling.chunking import HybridChunker
+from docling_core.transforms.chunker.tokenizer.openai import OpenAITokenizer
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.ingestion import DocstoreStrategy, IngestionPipeline
 from llama_index.core.storage.docstore import SimpleDocumentStore
@@ -44,9 +47,15 @@ def build_embed_model() -> OpenAIEmbedding:
 
 
 def build_pipeline(vector_store: PGVectorStore) -> IngestionPipeline:
+    encoding = tiktoken.encoding_for_model(settings.embed_model)
+    openai_tokenizer = OpenAITokenizer(tokenizer=encoding, max_tokens=512)
+    chunker = HybridChunker(
+        tokenizer=openai_tokenizer,
+        merge_peers=True,
+    )
     return IngestionPipeline(
         transformations=[
-            DoclingNodeParser(),
+            DoclingNodeParser(chunker=chunker),
             build_embed_model(),
         ],
         vector_store=vector_store,

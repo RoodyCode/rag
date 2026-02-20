@@ -420,6 +420,15 @@ chunking = [
     { name = "tree-sitter-python" },
     { name = "tree-sitter-typescript" },
 ]
+chunking-openai = [
+    { name = "semchunk" },
+    { name = "tiktoken" },
+    { name = "tree-sitter" },
+    { name = "tree-sitter-c" },
+    { name = "tree-sitter-javascript" },
+    { name = "tree-sitter-python" },
+    { name = "tree-sitter-typescript" },
+]
 
 [[package]]
 name = "docling-ibm-models"
@@ -1920,6 +1929,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "docling" },
+    { name = "docling-core", extra = ["chunking-openai"] },
     { name = "llama-index-core" },
     { name = "llama-index-embeddings-openai" },
     { name = "llama-index-llms-openai" },
@@ -1934,6 +1944,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "docling", specifier = ">=2.74.0" },
+    { name = "docling-core", extras = ["chunking-openai"], specifier = ">=2.65.1" },
     { name = "llama-index-core", specifier = ">=0.14.15" },
     { name = "llama-index-embeddings-openai", specifier = ">=0.5.1" },
     { name = "llama-index-llms-openai", specifier = ">=0.6.19" },
