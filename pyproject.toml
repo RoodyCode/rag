@@ -8,6 +8,7 @@ dependencies = [
     "docling>=2.74.0",
     "llama-index-core>=0.14.15",
     "llama-index-embeddings-openai>=0.5.1",
+    "llama-index-llms-openai>=0.6.19",
     "llama-index-node-parser-docling>=0.4.2",
     "llama-index-readers-docling>=0.4.2",
     "llama-index-vector-stores-postgres>=0.7.3",

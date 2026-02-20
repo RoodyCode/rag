@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     embed_model: str = "text-embedding-3-small"
     embed_dim: int = 1536
     table_name: str = "documents"
+    llm_model: str = "gpt-4o-mini"
 
 
 settings = Settings()

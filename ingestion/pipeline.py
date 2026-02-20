@@ -35,16 +35,19 @@ def load_documents(data_dir: Path):
     return dir_reader.load_data(show_progress=True)
 
 
-def build_pipeline(vector_store: PGVectorStore) -> IngestionPipeline:
-    embed_model = OpenAIEmbedding(
+def build_embed_model() -> OpenAIEmbedding:
+    return OpenAIEmbedding(
         model=settings.embed_model,
         api_key=settings.openai_api_key,
         **({"api_base": settings.openai_base_url} if settings.openai_base_url else {}),
     )
+
+
+def build_pipeline(vector_store: PGVectorStore) -> IngestionPipeline:
     return IngestionPipeline(
         transformations=[
             DoclingNodeParser(),
-            embed_model,
+            build_embed_model(),
         ],
         vector_store=vector_store,
         docstore=SimpleDocumentStore(),

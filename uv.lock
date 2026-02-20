@@ -874,6 +874,19 @@ wheels = [
 ]
 
 [[package]]
+name = "llama-index-llms-openai"
+version = "0.6.19"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "llama-index-core" },
+    { name = "openai" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/42/f0/810b09cab0d56de6f9476642d0e016c779f2ac3ec7845eb44ddc12a1796d/llama_index_llms_openai-0.6.19.tar.gz", hash = "sha256:a5e0fcddb7da875759406036e09b949cd64a2bb98da709d933147e41e0e6f78a", size = 25956, upload-time = "2026-02-20T11:18:03.527Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/dd/a8d4e90dad458c830f364e9e7614fad4d2eb8b61c46974c760b08053d495/llama_index_llms_openai-0.6.19-py3-none-any.whl", hash = "sha256:0e83126158f6eb51c153f2b1f7b729bb4bfb6af0191d65b33754b4512180befd", size = 26958, upload-time = "2026-02-20T11:18:02.545Z" },
+]
+
+[[package]]
 name = "llama-index-node-parser-docling"
 version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1909,6 +1922,7 @@ dependencies = [
     { name = "docling" },
     { name = "llama-index-core" },
     { name = "llama-index-embeddings-openai" },
+    { name = "llama-index-llms-openai" },
     { name = "llama-index-node-parser-docling" },
     { name = "llama-index-readers-docling" },
     { name = "llama-index-vector-stores-postgres" },
@@ -1922,6 +1936,7 @@ requires-dist = [
     { name = "docling", specifier = ">=2.74.0" },
     { name = "llama-index-core", specifier = ">=0.14.15" },
     { name = "llama-index-embeddings-openai", specifier = ">=0.5.1" },
+    { name = "llama-index-llms-openai", specifier = ">=0.6.19" },
     { name = "llama-index-node-parser-docling", specifier = ">=0.4.2" },
     { name = "llama-index-readers-docling", specifier = ">=0.4.2" },
     { name = "llama-index-vector-stores-postgres", specifier = ">=0.7.3" },
