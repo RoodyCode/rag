@@ -21,13 +21,7 @@ def build_vector_store() -> PGVectorStore:
         port=url.port,
         user=url.username,
         table_name=settings.table_name,
-        embed_dim=settings.embed_dim,
-        hnsw_kwargs={
-            "hnsw_m": 16,
-            "hnsw_ef_construction": 64,
-            "hnsw_ef_search": 40,
-            "hnsw_dist_method": "vector_cosine_ops",
-        },
+        embed_dim=settings.embed_dim
     )
 
 
