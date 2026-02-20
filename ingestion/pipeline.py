@@ -45,6 +45,7 @@ def build_pipeline(vector_store: PGVectorStore) -> IngestionPipeline:
     embed_model = OpenAIEmbedding(
         model=settings.embed_model,
         api_key=settings.openai_api_key,
+        **({"api_base": settings.openai_base_url} if settings.openai_base_url else {}),
     )
     return IngestionPipeline(
         transformations=[
