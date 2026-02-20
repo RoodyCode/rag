@@ -5,12 +5,20 @@ from llama_index.llms.openai import OpenAI
 from ingestion.config import settings
 from ingestion.pipeline import build_embed_model, build_vector_store
 
+# System prompt for the LLM. Kept general so the model can answer flexibly.
+SYSTEM_PROMPT = (
+    "You are a helpful assistant. Answer based on the document context provided. "
+    "When you can, give the specific information the user asked for; if it's not "
+    "in the context, say so."
+)
+
 
 def build_query_engine(similarity_top_k: int = 5) -> BaseQueryEngine:
     Settings.embed_model = build_embed_model()
     Settings.llm = OpenAI(
         model=settings.llm_model,
         api_key=settings.openai_api_key,
+        system_prompt=SYSTEM_PROMPT,
         **({"api_base": settings.openai_base_url} if settings.openai_base_url else {}),
     )
 
