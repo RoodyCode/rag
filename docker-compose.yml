@@ -7,8 +7,20 @@ services:
       POSTGRES_DB: chat_app
     ports:
       - "5432:5432"
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
     volumes:
-      - pgvector_data:/var/lib/postgresql/data
+      - redis_insight_data:/data
+    depends_on:
+      - redis
 
 volumes:
-  pgvector_data:
+  redis_insight_data:

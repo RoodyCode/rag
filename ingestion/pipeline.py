@@ -9,10 +9,19 @@ from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.node_parser.docling import DoclingNodeParser
 from llama_index.readers.docling import DoclingReader
+from llama_index.storage.docstore.redis import RedisDocumentStore
 from llama_index.vector_stores.postgres import PGVectorStore
 from sqlalchemy import make_url
 
 from ingestion.config import settings
+
+
+def build_docstore() -> RedisDocumentStore:
+    return RedisDocumentStore.from_host_and_port(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        namespace=settings.redis_namespace,
+    )
 
 
 def build_vector_store() -> PGVectorStore:
@@ -81,4 +90,10 @@ def run(data_dir: Path) -> int:
 
     nodes = pipeline.run(documents=documents, show_progress=True)
     print(f"Ingestion complete. {len(nodes)} node(s) inserted/updated.")
+
+    print("Persisting nodes to Redis docstore for BM25 retrieval…")
+    docstore = build_docstore()
+    docstore.add_documents(nodes)
+    print(f"Persisted {len(nodes)} node(s) to Redis.")
+
     return len(nodes)

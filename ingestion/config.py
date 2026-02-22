@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     embed_dim: int = 1536
     table_name: str = "documents"
     llm_model: str = "gpt-4o-mini"
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_namespace: str = "rag"
+    rerank_top_n: int = 5
+    similarity_top_k: int = 10
 
 
 settings = Settings()
