@@ -1,12 +1,11 @@
 from pathlib import Path
 
-import tiktoken
 from docling.chunking import HybridChunker
-from docling_core.transforms.chunker.tokenizer.openai import OpenAITokenizer
+from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTokenizer
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.ingestion import DocstoreStrategy, IngestionPipeline
 from llama_index.core.storage.docstore import SimpleDocumentStore
-from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.node_parser.docling import DoclingNodeParser
 from llama_index.readers.docling import DoclingReader
 from llama_index.storage.docstore.redis import RedisDocumentStore
@@ -47,19 +46,16 @@ def load_documents(data_dir: Path):
     return dir_reader.load_data(show_progress=True)
 
 
-def build_embed_model() -> OpenAIEmbedding:
-    return OpenAIEmbedding(
-        model=settings.embed_model,
-        api_key=settings.openai_api_key,
-        **({"api_base": settings.openai_base_url} if settings.openai_base_url else {}),
-    )
+def build_embed_model() -> HuggingFaceEmbedding:
+    return HuggingFaceEmbedding(model_name=settings.embed_model)
 
 
 def build_pipeline(vector_store: PGVectorStore) -> IngestionPipeline:
-    encoding = tiktoken.encoding_for_model(settings.embed_model)
-    openai_tokenizer = OpenAITokenizer(tokenizer=encoding, max_tokens=512)
+    hf_tokenizer = HuggingFaceTokenizer.from_pretrained(
+        model_name=settings.embed_model, max_tokens=512
+    )
     chunker = HybridChunker(
-        tokenizer=openai_tokenizer,
+        tokenizer=hf_tokenizer,
         merge_peers=True,
     )
     return IngestionPipeline(

@@ -1,8 +1,8 @@
 from llama_index.core import Settings, VectorStoreIndex
-from llama_index.core.postprocessor import LLMRerank
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.retrievers import QueryFusionRetriever
 from llama_index.llms.openai import OpenAI
+from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
 from llama_index.retrievers.bm25 import BM25Retriever
 
 from ingestion.config import settings
@@ -44,10 +44,9 @@ def build_query_engine(similarity_top_k: int | None = None) -> RetrieverQueryEng
         use_async=False,
     )
 
-    reranker = LLMRerank(
+    reranker = FlagEmbeddingReranker(
+        model=settings.rerank_model,
         top_n=settings.rerank_top_n,
-        llm=llm,
-        choice_batch_size=5,
     )
 
     return RetrieverQueryEngine.from_args(

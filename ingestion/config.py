@@ -11,13 +11,14 @@ class Settings(BaseSettings):
     database_url: str
     openai_api_key: str
     openai_base_url: str | None = None
-    embed_model: str = "text-embedding-3-small"
-    embed_dim: int = 1536
+    embed_model: str = "BAAI/bge-m3"
+    embed_dim: int = 1024
     table_name: str = "documents"
     llm_model: str = "gpt-4o-mini"
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_namespace: str = "rag"
+    rerank_model: str = "BAAI/bge-reranker-large"
     rerank_top_n: int = 5
     similarity_top_k: int = 10
 
