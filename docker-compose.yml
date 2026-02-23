@@ -22,5 +22,15 @@ services:
     depends_on:
       - redis
 
+  mcp:
+    build: .
+    command: uv run python mcp_server.py
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - pgvector
+      - redis
+
 volumes:
   redis_insight_data:
