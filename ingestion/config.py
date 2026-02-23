@@ -9,12 +9,12 @@ class Settings(BaseSettings):
     )
 
     database_url: str
-    openai_api_key: str
-    openai_base_url: str | None = None
+    bedrock_api_key: str
+    aws_region: str = "eu-central-1"
     embed_model: str = "BAAI/bge-m3"
     embed_dim: int = 1024
     table_name: str = "documents"
-    llm_model: str = "gpt-4o-mini"
+    llm_model: str = "openai.gpt-oss-20b-1:0"
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_namespace: str = "rag"

@@ -1,8 +1,10 @@
+import os
+
 from llama_index.core import Settings, VectorStoreIndex
 from llama_index.core.postprocessor import SentenceTransformerRerank
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.retrievers import QueryFusionRetriever
-from llama_index.llms.openai import OpenAI
+from llama_index.llms.bedrock_converse import BedrockConverse
 from llama_index.retrievers.bm25 import BM25Retriever
 
 from ingestion.config import settings
@@ -18,12 +20,13 @@ SYSTEM_PROMPT = (
 def build_query_engine(similarity_top_k: int | None = None) -> RetrieverQueryEngine:
     top_k = similarity_top_k if similarity_top_k is not None else settings.similarity_top_k
 
+    os.environ["AWS_BEARER_TOKEN_BEDROCK"] = settings.bedrock_api_key
+
     Settings.embed_model = build_embed_model()
-    llm = OpenAI(
+    llm = BedrockConverse(
         model=settings.llm_model,
-        api_key=settings.openai_api_key,
+        region_name=settings.aws_region,
         system_prompt=SYSTEM_PROMPT,
-        **({"api_base": settings.openai_base_url} if settings.openai_base_url else {}),
     )
     Settings.llm = llm
 
