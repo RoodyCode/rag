@@ -20,7 +20,19 @@ mcp = FastMCP("Knowledge Base Assistant")
 
 @mcp.tool()
 def search_knowledge(query: str) -> str:
-    """Search the RAG knowledge base and return an answer with sources. Call this for any user question that should be answered from the ingested documents (e.g. company docs, FAQs). Returns the model answer plus source file names; if nothing is found, says so."""
+    """
+    Search the user's private knowledge base.
+
+    This tool must be called for:
+    - personal data (e.g. account number, IBAN, salary)
+    - contracts
+    - invoices
+    - financial information
+    - any question about stored documents
+
+    Do not answer these questions directly.
+    Always call this tool first.
+    """
     try:
         engine = _get_engine()
         response = engine.query(query)
