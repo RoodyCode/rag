@@ -4,7 +4,9 @@ from pathlib import Path
 
 
 def main() -> None:
-    data_dir = Path(__file__).parent / "data"
+    from ingestion.config import settings
+
+    data_dir = settings.data_dir
 
     if not data_dir.exists():
         print(f"Error: data directory not found at {data_dir.resolve()}", file=sys.stderr)
@@ -21,7 +23,7 @@ def main() -> None:
         print(f"  • {f.relative_to(data_dir.parent)}")
     print()
 
-    from ingestion.pipeline import run  # deferred so config errors surface cleanly
+    from ingestion.pipeline import run
 
     start = time.perf_counter()
     node_count = run(data_dir)

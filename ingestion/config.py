@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,6 +12,7 @@ class Settings(BaseSettings):
 
     database_url: str
     bedrock_api_key: str
+    data_dir: Path = Path(__file__).resolve().parent.parent / "data"
     aws_region: str = "eu-central-1"
     embed_model: str = "BAAI/bge-m3"
     embed_dim: int = 1024
