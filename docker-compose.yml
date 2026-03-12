@@ -28,9 +28,24 @@ services:
     ports:
       - "8000:8000"
     env_file: .env
+    environment:
+      REDIS_HOST: redis
+      DATABASE_URL: postgresql://chat-app:admin@pgvector:5432/chat_app
     depends_on:
       - pgvector
       - redis
+
+  worker:
+    build: .
+    command: uv run python worker.py
+    env_file: .env
+    environment:
+      REDIS_HOST: redis
+      DATABASE_URL: postgresql://chat-app:admin@pgvector:5432/chat_app
+    depends_on:
+      - pgvector
+      - redis
+    mem_limit: 2g
 
 volumes:
   redis_insight_data:

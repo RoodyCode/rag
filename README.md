@@ -58,7 +58,14 @@ TABLE_NAME=documents
 LLM_MODEL=openai.gpt-oss-20b-1:0
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_DB=0
 REDIS_NAMESPACE=rag
+INGEST_QUEUE_NAME=ingestion
+INGEST_JOB_TIMEOUT_SECONDS=1800
+INGEST_RESULT_TTL_SECONDS=3600
+INGEST_FAILURE_TTL_SECONDS=86400
+INGEST_RETRY_MAX=3
+INGEST_WORKER_COUNT=2
 RERANK_MODEL=BAAI/bge-reranker-large
 RERANK_TOP_N=5
 SIMILARITY_TOP_K=10
@@ -78,7 +85,29 @@ Drop PDF files into the `data/` directory, then run:
 uv run python ingest.py
 ```
 
-This parses each PDF with Docling, chunks and embeds the content, stores vectors in PostgreSQL, and persists nodes to Redis for BM25 retrieval. Already-ingested documents are upserted (not duplicated).
+This now enqueues one ingestion job per PDF into Redis (RQ queue), which prevents the main process from loading everything into memory at once.
+
+Start one or more workers in separate terminals:
+
+```bash
+uv run python worker.py
+```
+
+Each worker processes queued PDFs independently: parse with Docling, chunk and embed content, store vectors in PostgreSQL, and persist nodes to Redis for BM25 retrieval.
+
+### Queue operations
+
+Run the queue/worker stack in Docker:
+
+```bash
+docker compose up -d redis worker
+```
+
+Scale workers when needed:
+
+```bash
+docker compose up -d --scale worker=3 worker
+```
 
 ## MCP Server
 
@@ -112,7 +141,9 @@ docker compose up -d
 │   └── pipeline.py        # Docling parsing, embedding, pgvector + Redis ingestion
 ├── query/
 │   └── engine.py          # Hybrid retriever + reranker + Bedrock LLM query engine
-├── ingest.py              # Ingestion entry point
+├── ingest.py              # Ingestion queue producer entry point
+├── worker.py              # RQ worker entry point
+├── ask.py                 # Local interactive query CLI
 ├── mcp_server.py          # FastMCP server exposing search_knowledge tool
 ├── Dockerfile
 └── docker-compose.yml

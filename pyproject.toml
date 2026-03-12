@@ -19,4 +19,6 @@ dependencies = [
     "pydantic-settings>=2.13.1",
     "sqlalchemy>=2.0.46",
     "mcp[cli]>=1.26.0",
+    "rq>=2.7.0",
+    "redis>=5.3.1",
 ]

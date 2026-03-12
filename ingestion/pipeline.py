@@ -2,6 +2,7 @@ from pathlib import Path
 
 from docling.chunking import HybridChunker
 from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTokenizer
+from redis import Redis
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.ingestion import DocstoreStrategy, IngestionPipeline
 from llama_index.core.storage.docstore import SimpleDocumentStore
@@ -16,9 +17,13 @@ from ingestion.config import settings
 
 
 def build_docstore() -> RedisDocumentStore:
-    return RedisDocumentStore.from_host_and_port(
+    redis_client = Redis(
         host=settings.redis_host,
         port=settings.redis_port,
+        db=settings.redis_db,
+    )
+    return RedisDocumentStore.from_redis_client(
+        redis_client=redis_client,
         namespace=settings.redis_namespace,
     )
 
@@ -36,14 +41,17 @@ def build_vector_store() -> PGVectorStore:
     )
 
 
-def load_documents(data_dir: Path):
+def list_pdf_files(data_dir: Path) -> list[Path]:
+    return sorted(data_dir.rglob("*.pdf"))
+
+
+def load_pdf_document(pdf_path: Path):
     reader = DoclingReader(export_type=DoclingReader.ExportType.JSON)
-    dir_reader = SimpleDirectoryReader(
-        input_dir=str(data_dir),
+    file_reader = SimpleDirectoryReader(
+        input_files=[str(pdf_path)],
         file_extractor={".pdf": reader},
-        recursive=True,
     )
-    return dir_reader.load_data(show_progress=True)
+    return file_reader.load_data(show_progress=False)
 
 
 def build_embed_model() -> HuggingFaceEmbedding:
@@ -69,27 +77,42 @@ def build_pipeline(vector_store: PGVectorStore) -> IngestionPipeline:
     )
 
 
-def run(data_dir: Path) -> int:
-    """Ingest all PDFs under *data_dir* into the vector store.
-
-    Returns the number of nodes that were inserted/updated.
-    """
-    print(f"Loading PDFs from: {data_dir.resolve()}")
-    documents = load_documents(data_dir)
+def process_pdf(pdf_path: Path) -> int:
+    """Ingest a single PDF and return inserted/updated node count."""
+    print(f"Processing PDF: {pdf_path}")
+    documents = load_pdf_document(pdf_path)
     if not documents:
-        print("No PDF documents found — nothing to ingest.")
+        print(f"No parseable content for {pdf_path}. Skipping.")
         return 0
 
-    print(f"Loaded {len(documents)} document(s). Building pipeline…")
     vector_store = build_vector_store()
     pipeline = build_pipeline(vector_store)
 
     nodes = pipeline.run(documents=documents, show_progress=True)
-    print(f"Ingestion complete. {len(nodes)} node(s) inserted/updated.")
+    if not nodes:
+        print(f"No nodes produced for {pdf_path}.")
+        return 0
 
-    print("Persisting nodes to Redis docstore for BM25 retrieval…")
     docstore = build_docstore()
     docstore.add_documents(nodes)
-    print(f"Persisted {len(nodes)} node(s) to Redis.")
-
+    print(f"Ingested {len(nodes)} node(s) for {pdf_path}.")
     return len(nodes)
+
+
+def run(data_dir: Path) -> int:
+    """Ingest all PDFs under *data_dir* into the vector store sequentially.
+
+    Returns the number of nodes that were inserted/updated.
+    """
+    print(f"Loading PDFs from: {data_dir.resolve()}")
+    pdf_files = list_pdf_files(data_dir)
+    if not pdf_files:
+        print("No PDF documents found — nothing to ingest.")
+        return 0
+
+    total_nodes = 0
+    for pdf_path in pdf_files:
+        total_nodes += process_pdf(pdf_path)
+
+    print(f"Ingestion complete. {total_nodes} node(s) inserted/updated.")
+    return total_nodes

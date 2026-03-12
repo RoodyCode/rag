@@ -1,7 +1,5 @@
 import sys
 import time
-from pathlib import Path
-
 
 def main() -> None:
     from ingestion.config import settings
@@ -23,13 +21,16 @@ def main() -> None:
         print(f"  • {f.relative_to(data_dir.parent)}")
     print()
 
-    from ingestion.pipeline import run
+    from ingestion.queue import enqueue_directory
 
     start = time.perf_counter()
-    node_count = run(data_dir)
+    enqueued, skipped_existing = enqueue_directory(data_dir)
     elapsed = time.perf_counter() - start
 
-    print(f"\nDone in {elapsed:.1f}s — {node_count} node(s) stored in PostgreSQL.")
+    print(f"\nDone in {elapsed:.1f}s.")
+    print(f"Enqueued: {enqueued} PDF job(s)")
+    print(f"Skipped (already queued/known): {skipped_existing} PDF job(s)")
+    print("Start workers with: uv run python worker.py")
 
 
 if __name__ == "__main__":
