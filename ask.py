@@ -1,3 +1,5 @@
+"""CLI entrypoint for local interactive querying."""
+
 import sys
 import time
 

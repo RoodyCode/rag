@@ -1,3 +1,5 @@
+"""MCP server entrypoint exposing the search_knowledge tool."""
+
 from mcp.server.fastmcp import FastMCP
 
 from query.engine import RetrieverQueryEngine, build_query_engine

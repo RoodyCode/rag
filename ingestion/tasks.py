@@ -1,3 +1,5 @@
+"""Worker task wrappers that execute ingestion pipeline functions."""
+
 import time
 from pathlib import Path
 

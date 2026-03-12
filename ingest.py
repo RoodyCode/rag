@@ -1,5 +1,8 @@
+"""CLI entrypoint to enqueue PDF ingestion jobs."""
+
 import sys
 import time
+
 
 def main() -> None:
     from ingestion.config import settings

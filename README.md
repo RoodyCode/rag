@@ -77,6 +77,10 @@ SIMILARITY_TOP_K=10
 uv sync
 ```
 
+### Configuration
+
+Environment variables are parsed by [`ingestion/config.py`](ingestion/config.py). Treat `Settings` in that file as the source of truth for available config keys and defaults.
+
 ## Ingestion
 
 Drop PDF files into the `data/` directory, then run:
@@ -123,6 +127,14 @@ The server starts on `http://localhost:8000` using SSE transport and exposes a s
 |---|---|
 | `search_knowledge` | Searches the knowledge base and returns an answer with source file citations |
 
+## Local CLI
+
+For local interactive querying (without MCP), run:
+
+```bash
+uv run python ask.py
+```
+
 ### Docker
 
 To run the full stack including the MCP server in Docker:
@@ -138,7 +150,9 @@ docker compose up -d
 ├── data/                  # PDF documents to ingest
 ├── ingestion/
 │   ├── config.py          # Pydantic settings (loaded from .env)
-│   └── pipeline.py        # Docling parsing, embedding, pgvector + Redis ingestion
+│   ├── pipeline.py        # Docling parsing, embedding, pgvector + Redis ingestion
+│   ├── queue.py           # Redis/RQ enqueueing for ingestion jobs
+│   └── tasks.py           # Worker task wrappers around ingestion functions
 ├── query/
 │   └── engine.py          # Hybrid retriever + reranker + Bedrock LLM query engine
 ├── ingest.py              # Ingestion queue producer entry point

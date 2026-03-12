@@ -1,3 +1,5 @@
+"""Query engine construction for hybrid retrieval and reranking."""
+
 import os
 
 from llama_index.core import Settings, VectorStoreIndex

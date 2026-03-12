@@ -1,3 +1,5 @@
+"""Ingestion pipeline primitives: loading, chunking, embedding, and storage writes."""
+
 from pathlib import Path
 
 from docling.chunking import HybridChunker
