@@ -36,112 +36,101 @@ flowchart LR
 - Docker & Docker Compose
 - AWS credentials with Bedrock access
 
-## Setup
+## Build and Run
 
-**1. Start infrastructure**
+### Configuration
 
-```bash
-docker compose up pgvector redis -d
-```
-
-**2. Create a `.env` file**
+`ingestion/config.py` is the source of truth for supported environment variables and defaults. Copy `.env.example` to `.env` and update credentials/endpoints for your environment.
 
 ```env
 DATABASE_URL=postgresql://chat-app:admin@localhost:5432/chat_app
 BEDROCK_API_KEY=<your-aws-bearer-token>
 AWS_REGION=eu-central-1
-
-# Optional overrides (defaults shown)
-EMBED_MODEL=BAAI/bge-m3
-EMBED_DIM=1024
-TABLE_NAME=documents
-LLM_MODEL=openai.gpt-oss-20b-1:0
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_DB=0
-REDIS_NAMESPACE=rag
-INGEST_QUEUE_NAME=ingestion
-INGEST_JOB_TIMEOUT_SECONDS=1800
-INGEST_RESULT_TTL_SECONDS=3600
-INGEST_FAILURE_TTL_SECONDS=86400
-INGEST_RETRY_MAX=3
-INGEST_WORKER_COUNT=2
-RERANK_MODEL=BAAI/bge-reranker-large
-RERANK_TOP_N=5
-SIMILARITY_TOP_K=10
+DATA_DIR=./data
 ```
 
-**3. Install dependencies**
+### Local Build and Run
+
+1. Install Python dependencies:
 
 ```bash
 uv sync
 ```
 
-### Configuration
+2. Start backing services:
 
-Environment variables are parsed by [`ingestion/config.py`](ingestion/config.py). Treat `Settings` in that file as the source of truth for available config keys and defaults.
+```bash
+docker compose up pgvector redis -d
+```
 
-## Ingestion
-
-Drop PDF files into the `data/` directory, then run:
+3. Enqueue ingestion jobs:
 
 ```bash
 uv run python ingest.py
 ```
 
-This now enqueues one ingestion job per PDF into Redis (RQ queue), which prevents the main process from loading everything into memory at once.
-
-Start one or more workers in separate terminals:
+4. Start one or more workers:
 
 ```bash
 uv run python worker.py
 ```
 
-Each worker processes queued PDFs independently: parse with Docling, chunk and embed content, store vectors in PostgreSQL, and persist nodes to Redis for BM25 retrieval.
-
-### Queue operations
-
-Run the queue/worker stack in Docker:
+5. Query locally (optional):
 
 ```bash
-docker compose up -d redis worker
+uv run python ask.py "your question"
 ```
 
-Scale workers when needed:
-
-```bash
-docker compose up -d --scale worker=3 worker
-```
-
-## MCP Server
-
-Run the MCP server locally:
+6. Run MCP server:
 
 ```bash
 uv run python mcp_server.py
 ```
 
-The server starts on `http://localhost:8000` using SSE transport and exposes a single tool:
+The server starts on `http://localhost:8000` and exposes:
 
 | Tool | Description |
 |---|---|
 | `search_knowledge` | Searches the knowledge base and returns an answer with source file citations |
 
-## Local CLI
+### Docker Build and Run
 
-For local interactive querying (without MCP), run:
+Build images:
 
 ```bash
-uv run python ask.py
+docker compose build
 ```
 
-### Docker
-
-To run the full stack including the MCP server in Docker:
+Run full stack:
 
 ```bash
 docker compose up -d
 ```
+
+Run only ingestion infrastructure + workers:
+
+```bash
+docker compose up -d pgvector redis worker
+```
+
+Scale worker count:
+
+```bash
+docker compose up -d --scale worker=3 worker
+```
+
+Run ingestion from inside the worker container (optional):
+
+```bash
+docker compose exec worker bash
+uv run python ingest.py
+```
+
+### Maintenance
+
+- Add dependencies with `uv add <package>` and commit both `pyproject.toml` and `uv.lock`.
+- Rebuild images after dependency changes with `docker compose build`.
+- When adding or renaming settings, update both `ingestion/config.py` and `.env.example`.
 
 ## Project Structure
 
