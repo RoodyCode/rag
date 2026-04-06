@@ -4,7 +4,6 @@ from pathlib import Path
 
 from docling.chunking import HybridChunker
 from docling_core.transforms.chunker.tokenizer.huggingface import HuggingFaceTokenizer
-from redis import Redis
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.ingestion import DocstoreStrategy, IngestionPipeline
 from llama_index.core.storage.docstore import SimpleDocumentStore
@@ -12,22 +11,20 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.node_parser.docling import DoclingNodeParser
 from llama_index.readers.docling import DoclingReader
 from llama_index.storage.docstore.redis import RedisDocumentStore
+from llama_index.storage.kvstore.redis import RedisKVStore
 from llama_index.vector_stores.postgres import PGVectorStore
 from sqlalchemy import make_url
 
 from ingestion.config import settings
 
 
+def build_redis_uri() -> str:
+    return f"redis://{settings.redis_host}:{settings.redis_port}/{settings.redis_db}"
+
+
 def build_docstore() -> RedisDocumentStore:
-    redis_client = Redis(
-        host=settings.redis_host,
-        port=settings.redis_port,
-        db=settings.redis_db,
-    )
-    return RedisDocumentStore.from_redis_client(
-        redis_client=redis_client,
-        namespace=settings.redis_namespace,
-    )
+    redis_kvstore = RedisKVStore(redis_uri=build_redis_uri())
+    return RedisDocumentStore(redis_kvstore, namespace=settings.redis_namespace)
 
 
 def build_vector_store() -> PGVectorStore:
